@@ -1,79 +1,141 @@
-"""Utils for deformable transformer."""
-
 import torch
-import torch.distributed as dist
+import numpy as np
+import logging
+import pyvista
+# from skimage.measure import marching_cubes_lewiner
 
 
-def nested_tensor_from_tensor_list(tensor_list):
-    # TODO make this more general
-    if tensor_list[0].ndim == 3:
-        # TODO make it support different-sized images
-        max_size = _max_by_axis([list(img.shape) for img in tensor_list])
-        # min_size = tuple(min(s) for s in zip(*[img.shape for img in tensor_list]))
-        batch_shape = [len(tensor_list)] + max_size
-        b, c, h, w = batch_shape
-        dtype = tensor_list[0].dtype
-        device = tensor_list[0].device
-        tensor = torch.zeros(batch_shape, dtype=dtype, device=device)
-        mask = torch.ones((b, h, w), dtype=torch.bool, device=device)
-        for img, pad_img, m in zip(tensor_list, tensor, mask):
-            pad_img[: img.shape[0], : img.shape[1], : img.shape[2]].copy_(img)
-            m[: img.shape[1], :img.shape[2]] = False
-    else:
-        raise ValueError('not supported')
-    return NestedTensor(tensor, mask)
+def get_total_grad_norm(parameters, norm_type=2):
+    parameters = list(filter(lambda p: p.grad is not None, parameters))
+    norm_type = float(norm_type)
+    device = parameters[0].grad.device
+    total_norm = torch.norm(torch.stack([torch.norm(p.grad.detach(), norm_type).to(device) for p in parameters]),
+                            norm_type)
+    return total_norm
 
-def _max_by_axis(the_list):
-    maxes = the_list[0]
-    for sublist in the_list[1:]:
-        for index, item in enumerate(sublist):
-            maxes[index] = max(maxes[index], item)
-    return maxes
+def image_graph_collate(batch):
+    images = torch.cat([item_ for item in batch for item_ in item[0]], 0).contiguous()
+    points = [item_ for item in batch for item_ in item[1]]
+    edges = [item_ for item in batch for item_ in item[2]]
+    return [images, points, edges]
 
-class NestedTensor(object):
-    def __init__(self, tensors, mask):
-        self.tensors = tensors
-        self.mask = mask
-
-    def to(self, device, non_blocking=False):
-        cast_tensor = self.tensors.to(device, non_blocking=non_blocking)
-        mask = self.mask
-        if mask is not None:
-            assert mask is not None
-            cast_mask = mask.to(device, non_blocking=non_blocking)
-        else:
-            cast_mask = None
-        return NestedTensor(cast_tensor, cast_mask)
-
-    def record_stream(self, *args, **kwargs):
-        self.tensors.record_stream(*args, **kwargs)
-        if self.mask is not None:
-            self.mask.record_stream(*args, **kwargs)
-
-    def decompose(self):
-        return self.tensors, self.mask
-
-    def __repr__(self):
-        return str(self.tensors)
+def image_graph_collate_road_network(batch):
+    images = torch.stack([item[0] for item in batch], 0).contiguous()
+    seg = torch.stack([item[1] for item in batch], 0).contiguous()
+    points = [item[2] for item in batch]
+    edges = [item[3] for item in batch]
+    return [images, seg, points, edges]
 
 
-def is_main_process():
-    return get_rank() == 0
+def save_input(path, idx, patch, patch_coord, patch_edge):
+    """[summary]
 
-def get_rank():
-    if not is_dist_avail_and_initialized():
-        return 0
-    return dist.get_rank()
+    Args:
+        patch ([type]): [description]
+        patch_coord ([type]): [description]
+        patch_edge ([type]): [description]
+    """
+    
+    # vertices, faces, _, _ = marching_cubes_lewiner(patch)
+    # vertices = vertices/np.array(patch.shape)
+    # faces = np.concatenate((np.int32(3*np.ones((faces.shape[0],1))), faces), 1)
+    
+    # mesh = pyvista.PolyData(vertices)
+    # mesh.faces = faces.flatten()
+    # mesh.save(path+'_sample_'+str(idx).zfill(3)+'_segmentation.stl')
+    
+    patch_edge = np.concatenate((np.int32(2*np.ones((patch_edge.shape[0],1))), patch_edge), 1)
+    mesh = pyvista.PolyData(patch_coord)
+    # print(patch_edge.shape)
+    mesh.lines = patch_edge.flatten()
+    mesh.save(path+'_sample_'+str(idx).zfill(3)+'_graph.vtp')
+    
+    
+def save_output(path, idx, patch_coord, patch_edge):
+    """[summary]
 
-def is_dist_avail_and_initialized():
-    if not dist.is_available():
-        return False
-    if not dist.is_initialized():
-        return False
-    return True
-
-def inverse_sigmoid(x, eps=1e-5):
-    x = x.clamp(min=0, max=1)
-    x1 = x.clamp(min=eps)
-    x2 = (1 - x).clamp(min=eps)
-    return torch.log(x1/x2)
+    Args:
+        patch ([type]): [description]
+        patch_coord ([type]): [description]
+        patch_edge ([type]): [description]
+    """
+    print('Num nodes:', patch_coord.shape[0], 'Num edges:', patch_edge.shape[0])
+    patch_edge = np.concatenate((np.int32(2*np.ones((patch_edge.shape[0],1))), patch_edge), 1)
+    mesh = pyvista.PolyData(patch_coord)
+    if patch_edge.shape[0]>0:
+        mesh.lines = patch_edge.flatten()
+    mesh.save(path+'_sample_'+str(idx).zfill(3)+'_graph.vtp')
+    
+    
+def Bresenham3D(p1, p2): 
+    """
+    Function to compute direct connection in voxel space
+    """
+    x1, y1, z1 = p1
+    x2, y2, z2 = p2
+    ListOfPoints = [] 
+    ListOfPoints.append((x1, y1, z1)) 
+    dx = abs(x2 - x1) 
+    dy = abs(y2 - y1) 
+    dz = abs(z2 - z1) 
+    if (x2 > x1): 
+        xs = 1
+    else: 
+        xs = -1
+    if (y2 > y1): 
+        ys = 1
+    else: 
+        ys = -1
+    if (z2 > z1): 
+        zs = 1
+    else: 
+        zs = -1
+  
+    # Driving axis is X-axis" 
+    if (dx >= dy and dx >= dz):         
+        p1 = 2 * dy - dx 
+        p2 = 2 * dz - dx 
+        while (x1 != x2): 
+            x1 += xs 
+            if (p1 >= 0): 
+                y1 += ys 
+                p1 -= 2 * dx 
+            if (p2 >= 0): 
+                z1 += zs 
+                p2 -= 2 * dx 
+            p1 += 2 * dy 
+            p2 += 2 * dz 
+            ListOfPoints.append((x1, y1, z1)) 
+  
+    # Driving axis is Y-axis" 
+    elif (dy >= dx and dy >= dz):        
+        p1 = 2 * dx - dy 
+        p2 = 2 * dz - dy 
+        while (y1 != y2): 
+            y1 += ys 
+            if (p1 >= 0): 
+                x1 += xs 
+                p1 -= 2 * dy 
+            if (p2 >= 0): 
+                z1 += zs 
+                p2 -= 2 * dy 
+            p1 += 2 * dx 
+            p2 += 2 * dz 
+            ListOfPoints.append((x1, y1, z1)) 
+  
+    # Driving axis is Z-axis" 
+    else:         
+        p1 = 2 * dy - dz 
+        p2 = 2 * dx - dz 
+        while (z1 != z2): 
+            z1 += zs 
+            if (p1 >= 0): 
+                y1 += ys 
+                p1 -= 2 * dz 
+            if (p2 >= 0): 
+                x1 += xs 
+                p2 -= 2 * dz 
+            p1 += 2 * dy 
+            p2 += 2 * dx 
+            ListOfPoints.append((x1, y1, z1)) 
+    return ListOfPoints
