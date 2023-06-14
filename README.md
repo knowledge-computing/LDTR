@@ -8,17 +8,18 @@
 <code>sudo nvidia-docker run -t -i -v {local_dir}:{docker_dir} -p 8888:8888 pytorch/pytorch:1.2-cuda10.0-cudnn7-devel</code>
 
 ## Training Data Generation
+
 <code> python generate_noprune_data.py </code>
 
 ## Train LDTR
-**Here is the command to train PolyDETR
+
 <code> python train.py --config configs/usgs_railroads.yaml --cuda_visible_device 0 </code>
 
 To update the parameters for data, model architecture, and training process, please update './configs/usgs_railroads.yaml'
 
 
 ## Use LDTR to detect desired linear objects
-## Here is the command to test PolyDETR
+
 <code> python test_darpa_map_conflation_shapely.py --cuda_visible_device 0 --config ./configs/usgs_railroads.yaml --checkpoint ./trained_weights/runsrailroads_1965_g256_10/models/checkpoint_epoch=200.pt </code>
 
 Please update './configs/usgs_railroads.yaml' for the path to the testing images 
