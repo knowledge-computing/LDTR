@@ -3,10 +3,15 @@
 ## LDTR's goal is to detect linear objects in the topographic or geological maps
 
 ## Docker imagery to train/testing LDTR
-**Here is the command to run the docker imagery**
-
-<code>sudo nvidia-docker run -t -i -v {local_dir}:{docker_dir} -p 8888:8888 pytorch/pytorch:1.2-cuda10.0-cudnn7-devel</code>
-
+**Here is the command to run the LDTR docker image**
+- Pull LDTR docker image from docker-hub
+```
+nvidia-docker pull weiweiduan/ldtr_pytorch:version0
+```
+- Run LDTR docker image
+```
+nvidia-docker run -t -i -v {local_dir}:{docker_dir} -p 8888:8888 weiweiduan/ldtr_pytorch:version0 /bin/bash
+```
 ## Training Data Generation
 
 <code> python generate_noprune_data.py </code>
