@@ -1,17 +1,23 @@
-# LDTR: Linear Object Detection Transformer for Accurate Graph Generation by Learning the N-hop Connectivity Information
+# **LDTR: Linear Object Detection Transformer**  
+### **Accurate Graph Generation by Learning N-hop Connectivity Information**
 
-## LDTR's goal is to detect linear objects in the topographic or geological maps
+## **Goal**
+LDTR aims to detect **linear objects** in **topographic** or **geological maps**.
 
-## Docker imagery to train/testing LDTR
-**Here is the command to run the LDTR docker image**
-- Pull LDTR docker image from docker-hub
+---
+
+## **Docker Image for Training & Testing LDTR**
+### **Run LDTR Docker Image**
+#### **1. Pull LDTR Docker Image from Docker Hub**
+```bash
+nvidia-docker pull weiweiduan/ldtr_pytorch:versions
 ```
-nvidia-docker pull weiweiduan/ldtr_pytorch:version0
-```
-- Run LDTR docker image
-```
+
+#### **1. Run LDTR docker image** 
+```bash
 nvidia-docker run -t -i -v {local_dir}:{docker_dir} -p 8888:8888 weiweiduan/ldtr_pytorch:version0 /bin/bash
 ```
+
 ## Training Data Generation
 
 <code> python generate_noprune_data.py </code>
@@ -29,3 +35,34 @@ To update the parameters for data, model architecture, and training process, ple
 
 Please update './configs/usgs_railroads.yaml' for the path to the testing images 
 
+## **Training and Testing Data**
+
+### **Training Data**
+Here is a link to an example **training dataset**:
+
+- **Training Data**: [Download Here](https://drive.google.com/file/d/14JQzqCUrqmpNxITJwUhskyLM9yhbnY4z/view?usp=sharing)
+  
+#### **Setup Instructions**
+1. **Download and unzip** the training data
+2. **Update the configuration file** (`usgs_railroads.yaml`):
+   - Locate the `DATA_PATH` field.
+   - Set it to the **unzipped training data directory**.
+
+---
+### **Testing Data**
+Here is a link to an example **testing dataset**:
+
+- **Testing Data**: [Download Here](https://drive.google.com/file/d/1eaEMET5wi2i3arYEXuZWWlSgD52fo9Fd/view?usp=sharing)
+
+#### **Contents of the Testing Dataset**
+The zip file contains:
+1. **`OR_Camas_g256_s100.zip`** → Direct input data for LDTR inference.
+2. **`OR_Camas.tif`** → The original map used for testing.
+3. **`OR_Camas_fault_line.tif`** → Ground truth raster image representing the **fault line** (linear object).
+
+#### **Setup Instructions**
+To test LDTR using this dataset:
+1. **Unzip the testing data**
+2. **Update the configuration file** (`usgs_railroads.yaml`):
+   - Set `TEST_DATA_PATH` to the **unzipped testing data directory**.
+   - Set `TEST_MAP_PATH` and `TEST_TIF_PATH` to the **original map path**.
