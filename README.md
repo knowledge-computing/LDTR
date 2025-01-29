@@ -47,8 +47,9 @@ Here is a link to an example **training dataset**:
 2. **Update the configuration file** (`usgs_railroads.yaml`):
    - Locate the `DATA_PATH` field.
    - Set it to the **unzipped training data directory**.
-
+  
 ---
+
 ### **Testing Data**
 Here is a link to an example **testing dataset**:
 
@@ -66,3 +67,5 @@ To test LDTR using this dataset:
 2. **Update the configuration file** (`usgs_railroads.yaml`):
    - Set `TEST_DATA_PATH` to the **unzipped testing data directory**.
    - Set `TEST_MAP_PATH` and `TEST_TIF_PATH` to the **original map path**.
+
+**Note**: The image dimension in both training and testing examples is 256*256 pixels
