@@ -2,31 +2,13 @@ DATA:
   DIM: 2                  # data dimension
   BATCH_SIZE: 32 #32 for 256, 8 for 512
   TEST_BATCH_SIZE: 16 #128 #16
-  DATA_PATH: './data/usgs/waterlines/train_data_g256_update'
-#   './data/usgs/waterlines/train_data_g256_update'
-#   './data/darpa/scarp_lines/train_data_g256_noprune'
-#   './data/darpa/thrust_fault_lines/train_data_g256_noprune' 
-#   '/data/weiweidu/relationformer_connection/data/usgs/waterlines/train_data_g256_update' 
-#   '/data/weiweidu/relationformer_connection_copy/data/usgs/railroads/train_data_g256_update/'
+  DATA_PATH: '/data/weiweidu/criticalmaas_data/geophysics_data/lineaments_g256'
   TEST_MAP_PATH: '/data/weiweidu/data/USGS_data/CO_Louisville_1965/CO_Louisville_1965_degeo.png'
-#   '/data/weiweidu/data/USGS_data/CO_Louisville_1965/CO_Louisville_1965_degeo.png'
-#   '/data/weiweidu//data/training_png_shp/CO_BigCostilla.png'
-#   '/data/weiweidu/data/USGS_data/CA_Bray_2001/CA_Bray_100414_2001_24000_geo.png'
-#    '/data/weiweidu/data/USGS_data/CO_Louisville_1965/CO_Louisville_1965_degeo.png'
   TEST_TIF_PATH: '/data/weiweidu/data/USGS_data/CO_Louisville_1965/CO_Louisville_450543_1965_24000_geo.tif'
-  TEST_DATA_PATH:  '/data/weiweidu/relationformer_connection/data/usgs/waterlines/test_bray_data_g256/'
-#   './data/usgs/waterlines/test_bray_data_g256/'
-#    '/data/weiweidu/relationformer_connection/data/usgs/railroads/test_bray_data_g256/'
-#   './data/usgs/railroads/test_data_g256_bray_subregion'
-#   '/data/weiweidu/relationformer_connection/data/usgs/waterlines/test_bray_data_g256/'
-#   '/data/weiweidu/relationformer_map/data/usgs/louisville_railroads/test_data_g256/' # including all patches
-#   './data/darpa/thrust_fault_lines/test_data_g512_AK_HinesCreek'
-#   '/data/weiweidu/relationformer_connection/data/usgs/waterlines/test_louisville_data_g256/'
-#   '/data/weiweidu/relationformer_connection/data/usgs/railroads/test_louisville_data_g256/'
+  TEST_DATA_PATH:  '/data/weiweidu/criticalmaas_data/geophysics_data/Alaska_HGMmag_g256/'
+#   '/data/weiweidu/criticalmaas_data/geophysics_data/lineaments_g256'
+#   '/data/weiweidu/criticalmaas_data/geophysics_data/Alaska_HGMmag_g256/'
   PRED_MAP_NAME: 'CO_Louisville_1965_waterlines_pred'
-#   'CO_BigCostilla_scarp_lines_pred'
-#   'CA_Bray_2001_railroads_pred'
-#   'CO_Louisville_1965_waterlines_pred'
   SHP_SAVE_PATH: '' 
   DATASET: 'US20-road-network-2D'     # Dataset name
   IMG_SIZE:  [256, 256]   #[256, 256]    # Input image size
@@ -70,7 +52,7 @@ MODEL:
     WITH_BOX_REFINE: False
     # RLN_TOKEN: True
 
-    OBJ_TOKEN: 60 #110(thrust), 40(rr, scarp), 60(wt), 280 (thrust512_update), 170(thrust512_prune)
+    OBJ_TOKEN: 110
     RLN_TOKEN: 1
     CONN_TOKEN: 1
     DUMMY_TOKEN: 1
@@ -104,5 +86,5 @@ TRAIN:
 
 
 log:
-  exp_name: 'waterlines_update_label_token60_distConn3_adjLoss20'
+  exp_name: 'lineament_update_label_token110_distConn5_adjLoss20'
   message: "Baseline 2D relationformer for 2D sat network"
