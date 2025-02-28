@@ -3,13 +3,12 @@ DATA:
   BATCH_SIZE: 32 #32 for 256, 8 for 512
   TEST_BATCH_SIZE: 16 #128 #16
   DATA_PATH: '/data/weiweidu/criticalmaas_data/geophysics_data/lineaments_g256'
-  TEST_MAP_PATH: '/data/weiweidu/data/USGS_data/CO_Louisville_1965/CO_Louisville_1965_degeo.png'
-  TEST_TIF_PATH: '/data/weiweidu/data/USGS_data/CO_Louisville_1965/CO_Louisville_450543_1965_24000_geo.tif'
-  TEST_DATA_PATH:  '/data/weiweidu/criticalmaas_data/geophysics_data/Alaska_HGMmag_g256/'
+  TEST_MAP_PATH: '/data/weiweidu/criticalmaas_data/training_fault_line/AK_HinesCreek.png'
+  TEST_DATA_PATH:  '/data/weiweidu/criticalmaas_data/geophysics_data/lineaments_g256/raw'
 #   '/data/weiweidu/criticalmaas_data/geophysics_data/lineaments_g256'
 #   '/data/weiweidu/criticalmaas_data/geophysics_data/Alaska_HGMmag_g256/'
-  PRED_MAP_NAME: 'CO_Louisville_1965_waterlines_pred'
-  SHP_SAVE_PATH: '' 
+  PRED_MAP_NAME: 'AK_HinesCreek_fault_line_pred'
+  SHP_SAVE_PATH: 'AK_HinesCreek_fault_line_pred' 
   DATASET: 'US20-road-network-2D'     # Dataset name
   IMG_SIZE:  [256, 256]   #[256, 256]    # Input image size
   NUM_WORKERS: 1          # Number of data loading threads
@@ -52,7 +51,7 @@ MODEL:
     WITH_BOX_REFINE: False
     # RLN_TOKEN: True
 
-    OBJ_TOKEN: 110
+    OBJ_TOKEN: 70
     RLN_TOKEN: 1
     CONN_TOKEN: 1
     DUMMY_TOKEN: 1
@@ -86,5 +85,5 @@ TRAIN:
 
 
 log:
-  exp_name: 'lineament_update_label_token110_distConn5_adjLoss20'
+  exp_name: 'lineament_update_label_token70_distConn7_adjLoss20'
   message: "Baseline 2D relationformer for 2D sat network"
