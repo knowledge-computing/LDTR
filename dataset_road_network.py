@@ -6,6 +6,7 @@ import random
 import pickle
 import json
 import cv2
+from PIL import Image
 import scipy.ndimage
 import imageio
 import math
@@ -105,6 +106,60 @@ class Sat2GraphDataLoader(Dataset):
         darker_image = cv2.convertScaleAbs(adjusted_image, alpha=brightness_factor, beta=0)
         return darker_image
 
+class Sat2GraphDataLoader_test(Dataset):
+    """[summary]
+
+    Args:
+        Dataset ([type]): [description]
+    """
+    def __init__(self, data, transform, brightness=1.0):
+        """[summary]
+
+        Args:
+            data ([type]): [description]
+            transform ([type]): [description]
+        """
+        self.data = data
+        self.transform = transform
+        self.brightness = brightness
+
+        self.mean = [0.485, 0.456, 0.406]
+        self.std = [0.229, 0.224, 0.225]
+    
+    def __len__(self):
+        """[summary]
+
+        Returns:
+            [type]: [description]
+        """
+        return len(self.data)
+    
+    def __getitem__(self, idx):
+        """[summary]
+
+        Args:
+            idx ([type]): [description]
+
+        Returns:
+            [type]: [description]
+        """
+        data = self.data[idx]
+        image_data = imageio.imread(data['img'])
+        image_pil = Image.fromarray(image_data)
+
+        image_data = np.array(image_data)
+        image_data = torch.tensor(image_data, dtype=torch.float).permute(2,0,1)
+        image_data = image_data/255.0
+        
+        seg_data = np.zeros(image_data.shape[:2])
+        seg_data = torch.tensor(seg_data, dtype=torch.int).unsqueeze(0)
+
+        image_data = tvf.normalize(torch.tensor(image_data, dtype=torch.float), mean=self.mean, std=self.std)
+
+        coordinates = torch.tensor(np.float32(np.zeros((3,3))), dtype=torch.float)
+        lines = torch.tensor(np.asarray(np.zeros((3,3))), dtype=torch.int64)
+        return image_data, seg_data-0.5, coordinates[:,:2], lines[:,1:]
+
 
 def build_road_network_data(config, mode='train', split=0.95):
     """[summary]
@@ -145,7 +200,7 @@ def build_road_network_data(config, mode='train', split=0.95):
         print('train data size: ', len(data_dicts))
         return ds
     elif mode=='test':
-        img_folder = os.path.join(config.DATA.TEST_DATA_PATH, 'raw')
+        img_folder = os.path.join(config.DATA.TEST_DATA_PATH)
         seg_folder = os.path.join(config.DATA.TEST_DATA_PATH, 'seg')
         vtk_folder = os.path.join(config.DATA.TEST_DATA_PATH, 'vtp')
         img_files = []
@@ -154,21 +209,21 @@ def build_road_network_data(config, mode='train', split=0.95):
         img_names = []
 
         for file_ in os.listdir(img_folder):
-            file_ = file_[:-8]
             img_names.append(file_)
-            img_files.append(os.path.join(img_folder, file_+'data.png'))
-            vtk_files.append(os.path.join(vtk_folder, file_+'graph.vtp'))
-            seg_files.append(os.path.join(seg_folder, file_+'seg.png'))
+            img_files.append(os.path.join(img_folder, file_))
+            vtk_files.append(os.path.join(vtk_folder, file_))
+            seg_files.append(os.path.join(seg_folder, file_))
 
         data_dicts = [
             {"img": img_file, "vtp": vtk_file, "seg": seg_file} for img_file, vtk_file, seg_file in zip(img_files, vtk_files, seg_files)
             ]
-        ds = Sat2GraphDataLoader(
+        ds = Sat2GraphDataLoader_test(
             data=data_dicts,
             transform=val_transform,
         )
         print('test data size: ', len(data_dicts))
         return ds, img_names
+    
     elif mode=='split':
         img_folder = os.path.join(config.DATA.DATA_PATH, 'raw')
         seg_folder = os.path.join(config.DATA.DATA_PATH, 'seg')
