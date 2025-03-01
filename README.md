@@ -29,7 +29,14 @@ This command runs the `generate_positive_training_data.py` script with the follo
 - `--stride <stride_for_cropping_patches>`: Determines the stride value for cropping patches from the input data.
 -->
 ### Generate positive data containing target lines
-<code> python generate_positive_training_data.py --input_dir <path_to_input_dir> --obj_name <line_object_name> --output_dir <path_to_generated_training_data> --start_index <starting_index_for_output_files> --stride <stride_for_cropping_patches> </code>
+```bash
+python generate_positive_training_data.py \
+   --input_dir <path_to_input_dir> \
+   --obj_name <line_object_name> \
+   --output_dir <path_to_generated_training_data> \
+   --start_index <starting_index_for_output_files> \
+   --stride <stride_for_cropping_patches>
+```
 
 The above command runs the `generate_positive_training_data.py` script with the following parameters:
 - `--input_dir <path_to_input_dir>`: Specifies the directory containing the input data.
@@ -39,7 +46,14 @@ The above command runs the `generate_positive_training_data.py` script with the 
 - `--stride <stride_for_cropping_patches>`: Determines the stride value for cropping patches from the input data.
 
 ### Generate negative data containing target lines
-<code> python generate_negative_training_data.py --input_dir <path_to_input_dir> --obj_name <line_object_name> --output_dir <path_to_generated_training_data> --start_index <starting_index_for_output_files> --stride <stride_for_cropping_patches> </code>
+```bash
+python generate_negative_training_data.py \
+   --input_dir <path_to_input_dir> \
+   --obj_name <line_object_name> \
+   --output_dir <path_to_generated_training_data> \
+   --start_index <starting_index_for_output_files> \
+   --stride <stride_for_cropping_patches>
+```
 
 The above command runs the `generate_negative_training_data.py` script with the following parameters:
 - `--input_dir <path_to_input_dir>`: Specifies the directory containing the input data.
@@ -164,19 +178,15 @@ Please update './configs/usgs_railroads.yaml' for the path to the testing images
 For debugging purposes, we provide a script to generate direct detection results at the patch level using LDTR.
 ```bash
 python inference_on_patch.py --cuda_visible_device 0 \
-                --config <path_to_yaml_config_file> \
-                --checkpoint <path_to_pretrained_LDTR> \
-                --output_dir <dir_to_save_detection_patches>
+         --config <path_to_yaml_config_file> \
+         --checkpoint <path_to_pretrained_LDTR> \
+         --output_dir <dir_to_save_detection_patches>
 ```
 
-The above command runs the `inference_on_map.py` script with the following parameters:
+The above command runs the `inference_on_patch.py` script with the following parameters:
 - `--cuda_visible_device 0`: Specifies the GPU device to be used.
 - `--config <path_to_yaml_config_file>`: Path to the YAML configuration file.
 - `--checkpoint <path_to_pretrained_LDTR>`: Path to the pretrained LDTR model checkpoint.
-- `--predict_raster`: Flag to enable raster prediction.
-- `--predict_vector`: Flag to enable vector prediction.
-- `--map_name <input_map_file_name>`: Name of the input map file.
-- `--line_feature_name <target_line_name>`: Name of the target line feature to detect. The detection output will be named as `<map_name>_<line_feature_name>`
-- `--prediction_dir <the_folder_to_save_the_detection>`: Directory to save the detection results.
+- `--output_dir <dir_to_save_detection_patches>`: Directory to save the detection results for each patch.
 
 Please update './configs/usgs_railroads.yaml' for the path to the testing images 
